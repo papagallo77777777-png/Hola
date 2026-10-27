@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cómo funciona un depurador de Java</title>
+  <meta name="description" content="Animación interactiva que explica cómo funciona un depurador (debugger) de Java: breakpoints, Step Into/Over/Out, pila de llamadas, variables y JDWP.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <h1><span aria-hidden="true">🐞</span> Cómo funciona un depurador de Java</h1>
+    <p>Pulsa <strong>Iniciar depuración</strong> y avanza paso a paso, o usa <strong>Demo automática</strong>.
+       Haz clic en un número de línea para poner o quitar un <em>breakpoint</em>.</p>
+  </header>
+
+  <main>
+    <!-- Arquitectura: IDE <-> JDWP <-> JVM -->
+    <section class="arch" aria-label="Arquitectura de la depuración">
+      <div class="node">
+        <strong>IDE</strong>
+        <small>Depurador (cliente)</small>
+      </div>
+      <div class="wire" aria-hidden="true">
+        <span class="wire-line"></span>
+        <span class="wire-label">JDWP</span>
+        <span id="packet" class="packet" hidden></span>
+      </div>
+      <div class="node">
+        <strong>JVM</strong>
+        <small>Tu programa</small>
+        <span id="jvmState" class="badge" role="status">Sin iniciar</span>
+      </div>
+    </section>
+
+    <!-- Controles -->
+    <section class="toolbar" aria-label="Controles del depurador">
+      <button id="btnStart" class="primary" type="button">▶ Iniciar depuración</button>
+      <button id="btnContinue" type="button" title="Atajo: C">⏩ Continuar</button>
+      <button id="btnInto" type="button" title="Atajo: I">⤵ Step Into</button>
+      <button id="btnOver" type="button" title="Atajo: O">⤼ Step Over</button>
+      <button id="btnOut" type="button" title="Atajo: U">⤴ Step Out</button>
+      <button id="btnAuto" type="button" title="Atajo: Espacio">🎬 Demo automática</button>
+      <button id="btnReset" type="button">↺ Reiniciar</button>
+      <label class="speed">Velocidad
+        <input id="speed" type="range" min="1" max="5" value="3">
+      </label>
+    </section>
+
+    <div class="grid">
+      <!-- Código -->
+      <section class="panel code-panel" aria-labelledby="hCode">
+        <h2 id="hCode">Código fuente <small>Main.java</small></h2>
+        <div id="code" class="code" role="list"></div>
+        <p class="legend">
+          <span class="dot bp"></span> breakpoint
+          <span class="arrow">▶</span> línea que se va a ejecutar
+        </p>
+      </section>
+
+      <div class="side">
+        <section class="panel" aria-labelledby="hStack">
+          <h2 id="hStack">Pila de llamadas <small>Call stack</small></h2>
+          <ol id="stack" class="stack" aria-live="polite"></ol>
+          <p class="hint">Haz clic en un marco para ver sus variables.</p>
+        </section>
+
+        <section class="panel" aria-labelledby="hVars">
+          <h2 id="hVars">Variables <small id="varsOwner"></small></h2>
+          <table class="vars">
+            <thead><tr><th scope="col">Nombre</th><th scope="col">Valor</th></tr></thead>
+            <tbody id="vars"></tbody>
+          </table>
+        </section>
+
+        <section class="panel" aria-labelledby="hOut">
+          <h2 id="hOut">Consola</h2>
+          <pre id="console" class="console" aria-live="polite"></pre>
+        </section>
+      </div>
+    </div>
+
+    <div class="grid bottom">
+      <section class="panel explain" aria-labelledby="hExp">
+        <h2 id="hExp">¿Qué está pasando? <span id="tag" class="tag"></span></h2>
+        <p id="note" aria-live="polite"></p>
+      </section>
+
+      <section class="panel" aria-labelledby="hLog">
+        <h2 id="hLog">Mensajes JDWP <small>IDE ⇄ JVM</small></h2>
+        <ol id="log" class="log"></ol>
+      </section>
+    </div>
+
+    <section class="concepts" aria-labelledby="hConc">
+      <h2 id="hConc">Ideas clave</h2>
+      <div class="cards">
+        <article>
+          <h3>Breakpoint</h3>
+          <p>Marca una línea. La JVM se <strong>suspende</strong> justo antes de ejecutarla y avisa al IDE.</p>
+        </article>
+        <article>
+          <h3>Step Into / Over / Out</h3>
+          <p><strong>Into</strong> entra en la llamada. <strong>Over</strong> la ejecuta entera. <strong>Out</strong> termina el método actual.</p>
+        </article>
+        <article>
+          <h3>Pila de llamadas</h3>
+          <p>Cada método activo tiene un <strong>marco</strong> con sus variables. La recursión apila un marco por llamada.</p>
+        </article>
+        <article>
+          <h3>JPDA y JDWP</h3>
+          <p>El IDE y la JVM hablan por el protocolo <strong>JDWP</strong>. Se activa con
+             <code>-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005</code>.</p>
+        </article>
+      </div>
+      <p class="keys">Atajos: <kbd>C</kbd> continuar · <kbd>I</kbd> Into · <kbd>O</kbd> Over · <kbd>U</kbd> Out · <kbd>Espacio</kbd> demo.</p>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
